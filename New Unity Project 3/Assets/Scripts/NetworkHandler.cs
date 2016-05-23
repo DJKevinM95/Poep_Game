@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
-using UnityEngine.Experimental.Networking; //Don't forget to import this(it's not imported by default)
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.Experimental.Networking; //Don't forget to import this(it's not imported by default)
+using SimpleJSON;
 
 public class NetworkHandler : MonoBehaviour {
-	private string url = "http://localhost:8081/webtest/index.php";
+	private string baseUrl = "http://leaderboard.fxraid.com/api/v1/players";
 
 	void Start () {
+
 		//Call this to get data
 		StartCoroutine(GetScores());
 
 		//Call this to send data
-		this.sendScore(5);			
+		// this.sendScore(5);			
 	}
 	
 	void Update () {
@@ -18,16 +21,18 @@ public class NetworkHandler : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Sends the int score to the score API.
-	/// Usses the private field url of this class
+	/// sends the score to the server
 	/// </summary>
 	///
 	/// <param name="score">The score</param>
-	/// <returns>void</returns>c
-	void sendScore(int score){
+	/// <param name="username">The username</param>
+	void sendScore(int score, string username){
 		WWWForm form = new WWWForm();
+
+		form.AddField("username", username);
 		form.AddField("score", score.ToString());
-		WWW www = new WWW(this.url, form);
+
+		WWW www = new WWW(this.baseUrl, form);
 	}
 
 	/// <summary>
@@ -39,7 +44,7 @@ public class NetworkHandler : MonoBehaviour {
 	/// <returns>Scores.</returns>
 
 	IEnumerator GetScores() {
-        using(UnityWebRequest www = UnityWebRequest.Get(this.url)) {
+        using(UnityWebRequest www = UnityWebRequest.Get(this.baseUrl)) {
             yield return www.Send();
      
             if(www.isError) {
@@ -59,6 +64,8 @@ public class NetworkHandler : MonoBehaviour {
     /// <returns>void</returns>
     void succesHandlerScores(string result){
     	Debug.Log(result);
+
+  		var myObject = JSON.Parse(result);
     }
 
     /// <summary>
@@ -70,4 +77,19 @@ public class NetworkHandler : MonoBehaviour {
     void errorHandlerScores(string error){
     	Debug.Log(error);
     }
+}
+
+// [Serializable]
+public class Score 
+{
+  	public int id;
+  	public string username;
+  	public int score;
+  	public string created_at;
+  	public string updated_ad;
+}
+
+public class Scores 
+{
+  	public int[] scores;
 }
